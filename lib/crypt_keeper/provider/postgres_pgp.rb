@@ -41,11 +41,12 @@ module CryptKeeper
         end
       end
 
-      def search(records, field, criteria)
+      def search(records, field, criteria, operator)
         if criteria.present?
+          operator = check_operator(operator)
           records
             .where.not("TRIM(BOTH FROM #{field}) = ?", "")
-            .where("(pgp_sym_decrypt(cast(\"#{field}\" AS bytea), ?) = ?)",
+            .where("(pgp_sym_decrypt(cast(\"#{field}\" AS bytea), ?) #{operator} ?)",
                    key, criteria)
         else
           records.where(field => criteria)
@@ -53,6 +54,13 @@ module CryptKeeper
       end
 
       private
+
+      def check_operator(operator)
+        operator = operator.to_s
+        operator =~ /\A(=|!=|(NOT\s+)?LIKE|!?~\*?)\z/i or
+          raise ArgumentError, "operator #{operator.inspect} is not allowed"
+        operator
+      end
 
       # Private: Rescues and filters invalid statement errors. Run the code
       # within a block for it to be rescued.

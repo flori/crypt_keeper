@@ -73,9 +73,9 @@ to be used for encryption"
         end
       end
 
-      def search_by_plaintext(field, criteria)
+      def search_by_plaintext(field, criteria, operator: ?=)
         if crypt_keeper_fields.include?(field.to_sym)
-          encryptor.search(all, field.to_s, criteria)
+          encryptor.search(all, field.to_s, criteria, operator)
         else
           raise ArgumentError, "#{field} is not a crypt_keeper field"
         end
